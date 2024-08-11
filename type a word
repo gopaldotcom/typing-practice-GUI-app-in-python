@@ -1,0 +1,86 @@
+import tkinter as tk
+from tkinter import messagebox
+import time
+
+class TypingPracticeApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Typing Practice App")
+
+        self.start_time = None
+        self.correct_word_count = 0
+        self.total_word_count = 0
+
+        
+        self.setup_widgets()
+        
+        
+        self.sentence = "The quick brown fox jumps over the lazy dog."
+        self.display_sentence()
+
+    def setup_widgets(self):
+        self.instruction_label = tk.Label(self.root, text="Type the following sentence:")
+        self.instruction_label.pack(pady=10)
+
+        self.sentence_label = tk.Label(self.root, text="", wraplength=400)
+        self.sentence_label.pack(pady=10)
+
+        self.typing_entry = tk.Entry(self.root, width=50)
+        self.typing_entry.pack(pady=10)
+        self.typing_entry.bind("<KeyRelease>", self.check_typing)
+
+        self.speed_label = tk.Label(self.root, text="Speed: 0 WPM")
+        self.speed_label.pack(pady=10)
+
+        self.mistakes_label = tk.Label(self.root, text="Mistakes: 0")
+        self.mistakes_label.pack(pady=10)
+
+        self.restart_button = tk.Button(self.root, text="Restart", command=self.restart)
+        self.restart_button.pack(pady=10)
+
+    def display_sentence(self):
+        self.sentence_label.config(text=self.sentence)
+        self.typing_entry.delete(0, tk.END)
+        self.typing_entry.focus()
+        self.start_time = None
+        self.correct_word_count = 0
+        self.total_word_count = 0
+        self.speed_label.config(text="Speed: 0 WPM")
+        self.mistakes_label.config(text="Mistakes: 0")
+
+    def check_typing(self, event):
+        typed_text = self.typing_entry.get()
+        if not self.start_time:
+            self.start_time = time.time()
+        
+        if typed_text == self.sentence:
+            self.calculate_speed()
+            messagebox.showinfo("Typing Test", "Congratulations! You typed the sentence correctly.")
+            self.restart()
+
+        
+        correct_text = self.sentence[:len(typed_text)]
+        if typed_text != correct_text:
+            self.typing_entry.config(bg='red')
+        else:
+            self.typing_entry.config(bg='white')
+        
+       
+        typed_words = typed_text.split()
+        sentence_words = self.sentence.split()
+        self.total_word_count = len(typed_words)
+        self.correct_word_count = sum(1 for t, s in zip(typed_words, sentence_words) if t == s)
+        self.mistakes_label.config(text=f"Mistakes: {self.total_word_count - self.correct_word_count}")
+
+    def calculate_speed(self):
+        elapsed_time = time.time() - self.start_time
+        words_per_minute = (self.correct_word_count / elapsed_time) * 60 if elapsed_time > 0 else 0
+        self.speed_label.config(text=f"Speed: {int(words_per_minute)} WPM")
+
+    def restart(self):
+        self.display_sentence()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TypingPracticeApp(root)
+    root.mainloop()
